@@ -31,7 +31,10 @@ public class Work_scheduling extends JFrame {
     private static Vector<JCheckBox> weekcheckvector = new Vector<JCheckBox>();
     private static String infoString = "";
     private static JPanel pnl1;
-    private static Vector<Schedule> schedule;
+    private static JPanel p2;
+    private static CardLayout p2Layout;
+    private static Vector<WorkTable> schedule;
+    //private static Vector<Schedule> schedule;
 
     public Work_scheduling() {
         setVisible(true);
@@ -70,8 +73,10 @@ public class Work_scheduling extends JFrame {
         p1.setPreferredSize(new Dimension(85, 450));
         p1.setBorder(new LineBorder(Color.black, 3));
         pnl1.add(p1, BorderLayout.WEST);
-
-        JPanel p2 = createShowWorker();
+        
+        p2 = new JPanel();
+        p2Layout = new CardLayout();
+        p2.setLayout(p2Layout);
         p2.setPreferredSize(new Dimension(450, 450));
         p2.setBorder(new LineBorder(Color.black, 3));
         pnl1.add(p2, BorderLayout.CENTER);
@@ -86,6 +91,7 @@ public class Work_scheduling extends JFrame {
         pnl2.add(p4, BorderLayout.NORTH);
         
         JPanel pnl3 = new JPanel(new BorderLayout());
+        pnl3.setPreferredSize(new Dimension(525, 470));
         JPanel tmp1 = new JPanel();
         tmp1.setPreferredSize(new Dimension(200,200));
         JPanel tmp2 = new JPanel();
@@ -94,11 +100,8 @@ public class Work_scheduling extends JFrame {
         tmp3.setPreferredSize(new Dimension(200,200));
         JPanel tmp4 = new JPanel();
         tmp4.setPreferredSize(new Dimension(200,200));
-        JPanel tmp5 = new JPanel();
-        pnl3.setPreferredSize(new Dimension(525, 470));
-        JButton generate = new JButton("generate");
+        JPanel tmp5 = createGenerateButton();
         tmp5.setPreferredSize(new Dimension(200,200));
-        tmp5.add(generate);
         pnl3.add(tmp1, BorderLayout.EAST);
         pnl3.add(tmp2, BorderLayout.WEST);
         pnl3.add(tmp3, BorderLayout.SOUTH);
@@ -349,6 +352,56 @@ public class Work_scheduling extends JFrame {
                 for(JCheckBox checkbox : weekcheckvector)
                 	checkbox.setSelected(false);
                 
+                JPanel tmpPanel = new JPanel(new GridBagLayout());
+                tmpPanel.setBorder(new LineBorder(Color.BLACK));
+                addLabelForShowWorker(tmpPanel, gbc, "이름", 0, 0, 1, 1);
+                addLabelForShowWorker(tmpPanel, gbc, "직급", 0, 1, 1, 1);
+                addLabelForShowWorker(tmpPanel, gbc, "총 근무 가능 시간", 0, 2, 1, 1);
+                addLabelForShowWorker(tmpPanel, gbc, "가능 시간", 0, 3, 1, 1);
+                addLabelForShowWorker(tmpPanel, gbc, "가능 요일", 0, 4, 1, 1);
+                addLabelForShowWorker(tmpPanel, gbc, name, 1, 0, 1, 1);
+                addLabelForShowWorker(tmpPanel, gbc, jobLevel, 1, 1, 1, 1);
+                addLabelForShowWorker(tmpPanel, gbc, totalTime, 1, 2, 1, 1);
+                addLabelForShowWorker(tmpPanel, gbc, time, 1, 3, 1, 1);
+                
+                String str = "";
+                if(week.contains("0")) {
+                	str += "MON";
+                	if(week.charAt(week.length() - 1) != '0')
+                		str += ", ";
+                }
+                if(week.contains("1")) {
+                	str += "TUE";
+                	if(week.charAt(week.length() - 1) != '1')
+                		str += ", ";
+                }
+                if(week.contains("2")) {
+                	str += "WED";
+                	if(week.charAt(week.length() - 1) != '2')
+                		str += ", ";
+                }
+                if(week.contains("3")) {
+                	str += "THU";
+                	if(week.charAt(week.length() - 1) != '3')
+                		str += ", ";
+                }
+                if(week.contains("4")) {
+                	str += "FRI";
+                	if(week.charAt(week.length() - 1) != '4')
+                		str += ", ";
+                }
+                if(week.contains("5")) {
+                	str += "SAT";
+                	if(week.charAt(week.length() - 1) != '5')
+                		str += ", ";
+                }
+                if(week.contains("6")) {
+                	str += "SUN";
+                	if(week.charAt(week.length() - 1) != '6')
+                		str += ", ";
+                }
+                addLabelForShowWorker(tmpPanel, gbc, str, 1, 4, 1, 1);
+                p2.add(tmpPanel, name);
             }
         });
         
@@ -380,6 +433,15 @@ public class Work_scheduling extends JFrame {
             }
         });
         return panel;
+    }
+    private static void addLabelForShowWorker(JPanel panel, GridBagConstraints gbc, String name, int x, int y, int width, int height) {
+    	JLabel label = new JLabel(name);
+    	label.setBorder(new LineBorder(Color.BLACK));
+    	gbc.gridx = x;
+        gbc.gridy = y;
+        gbc.gridwidth = width;
+        gbc.gridheight = height;
+        panel.add(label, gbc);
     }
     private static void addLabelForWorker(JPanel panel, GridBagConstraints gbc, String name, int x, int y, int width, int height, boolean center) {
     	JLabel label = new JLabel(name);
@@ -442,13 +504,25 @@ public class Work_scheduling extends JFrame {
     private static JPanel createWorkerList() {
     	JPanel panel = new JPanel(new BorderLayout());
     	panel.add(namelist, BorderLayout.CENTER);
+    	namelist.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                	String str = namelist.getSelectedValue();
+                    JPanel panel = showWorker(str);
+                    panel.setPreferredSize(new Dimension(450, 450));
+                    panel.setBorder(new LineBorder(Color.black, 3));
+                    pnl1.add(panel, BorderLayout.CENTER);
+                }
+            }
+        });
     	JButton delete = new JButton("delete");
     	panel.add(delete, BorderLayout.SOUTH);
     	return panel;
     }
-    private static JPanel createShowWorker() {
+    private static JPanel showWorker(String str) {
     	JPanel panel = new JPanel();
-    	
+    	p2Layout.show(p2, str);
     	return panel;
     }
     private static void underlineFirstLetter(JLabel label) {
@@ -469,54 +543,23 @@ public class Work_scheduling extends JFrame {
         }
         return -1;
     }
-    private static void addListSelectionListener(JList<String> sourceList, JList<String> list1, JList<String> list2) {
-        sourceList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    int selectedIndex = sourceList.getSelectedIndex();
-                    list1.setSelectedIndex(selectedIndex);
-                    list2.setSelectedIndex(selectedIndex);
-                }
-            }
-        });
-    }
+
     
     private static JPanel createGenerateButton() {
     	JPanel panel = new JPanel();
-        panel.setPreferredSize(new Dimension(700, 50));
-        panel.setBorder(new LineBorder(Color.black, 3));
-    	panel.setLayout(new BorderLayout());
+        panel.setPreferredSize(new Dimension(200,200));
         JButton generateButton = new JButton("Generate");
         generateButton.setPreferredSize(new Dimension(100, 50));
-
-        panel.add(generateButton, BorderLayout.EAST);
+        panel.add(generateButton);
         generateButton.addActionListener(new ActionListener() {
         	@Override
         	public void actionPerformed(ActionEvent e) {
-        		
-        		infoString = "";
-        		for(int i = 0;i < timevector.size();i++)
-        			infoString += timevector.elementAt(i) + "<br>";
-        		infoString += "<br>";
-        		for(int i = 0;i < nameListModel.size(); i++) {
-        			infoString += nameListModel.getElementAt(i) + " ";
-        			infoString += jobListModel.getElementAt(i) + " ";
-        			infoString += timeListModel.getElementAt(i) + "<br>";
-        		}
-        		System.out.println(infoString);
-                /*
-        		JPanel tablesPanel = createTables();
-                updateTablesPanel(tablesPanel);
-
-                pnl1.remove(1);
-                pnl1.add(tablesPanel, BorderLayout.CENTER);
-
-                pnl1.revalidate();
-                pnl1.repaint();
-                */
-        		//To Do
                 schedule = makeSchedule();
+                Vector<JPanel> inputJPanelVector = new Vector<JPanel>();
+                for(WorkTable wt : schedule) {
+                	inputJPanelVector.add(wt.showTable());
+                }
+                generateTable(inputJPanelVector);
             }
         });
     	return panel;
@@ -539,20 +582,28 @@ public class Work_scheduling extends JFrame {
     	return panel;
     }
     
-    private static Vector<Schedule> makeSchedule(){
-    	Vector<Schedule> schedules = new Vector<Schedule>();
-    	
-    	return schedules;
+    private static Vector<WorkTable> makeSchedule(){
+    	Vector<WorkTable> result = new Vector<WorkTable>();
+    	Schedule scd = new Schedule(timevector, nameListModel,
+    			totalTimeListModel,jobListModel, 
+    			timeListModel, weekListModel);
+    	result = scd.makeTable();
+    	return result;
     }
     private static void updateTablesPanel(JPanel tablesPanel) {
         JLabel label = (JLabel) tablesPanel.getComponent(0);
         label.setText("<html>"+infoString+"</html>");
     }
     
-    private static JPanel generateTable(Schedule schedule) {
+    private static void generateTable(Vector<JPanel> panelvector) {
+    	JFrame frame = new JFrame("WorkTables");
     	JPanel panel = new JPanel();
-    	
-    	return panel;
+    	panel.setLayout(new GridLayout(panelvector.size(), 1));
+    	for(JPanel pnl : panelvector)
+    		panel.add(pnl);
+    	JScrollPane scrollPane = new JScrollPane(panel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        frame.add(scrollPane);
     }
     
     public static void main(String[] args) {
